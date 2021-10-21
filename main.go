@@ -8,12 +8,12 @@ import (
 func main() {
 
 	var (
-		number, sum int
-		nums        = []int{9, 8, 7, 6, 5, 4, 3, 2, 1, 0}
-		vars        [][]int
-		str_result  string
+		number     int
+		nums       = []int{9, 8, 7, 6, 5, 4, 3, 2, 1, 0}
+		vars       [][]int
+		result     [][]int
+		str_result []string
 	)
-
 	number = 200
 	//fmt.Println("Enter number")
 	//fmt.Scan(&number)
@@ -31,71 +31,82 @@ func main() {
 		}
 	}
 
-	result, _ := find(vars, number)
+	result = find(vars, number)
 
-	for i, elem := range result {
-		sum += elem
-		if i != 0 && elem >= 0 {
-			str_result += "+"
+	for i, sub_arr := range result {
+		str_result = append(str_result, "")
+		for j, elem := range sub_arr {
+			if j != 0 && elem >= 0 {
+				str_result[i] += "+"
+			}
+			str_result[i] += strconv.Itoa(elem)
 		}
-		str_result += strconv.Itoa(elem)
+		str_result[i] += " = "
+		str_result[i] += strconv.Itoa(number)
 	}
 
-	if sum != number {
-		fmt.Println("Fail")
-		return
+	for _, sub := range str_result {
+		fmt.Println(sub)
 	}
-
-	str_result += " = "
-	str_result += strconv.Itoa(number)
-
-	fmt.Println(str_result)
-
 }
 
-func find(vars [][]int, number int) ([]int, int) {
+func find(comb [][]int, number int) [][]int {
 
-	var result []int
-	ln := len(vars[0])
+	var result [][]int
 
-	if len(vars) == 2 {
-		for i := 0; i < ln; i++ {
+	if len(comb) == 1 {
 
-			if number == 0 {
-				return []int{vars[0][0]}, number
-			}
+		result = append(result, []int{})
 
-			if number-vars[0][i] == 0 {
-				if vars[0][i]/10 != 0 {
-					return []int{vars[0][i]}, vars[0][i]
+		if number == 0 {
+			result[0] = append(result[0], comb[0][0])
+			return result
+		} else {
+			return nil
+		}
+	} else if len(comb) == 2 {
+
+		result = append(result, []int{})
+
+		for i := 0; i < len(comb[0]); i++ {
+
+			if number-comb[0][i] == 0 {
+				if comb[0][i]%10 == 0 {
+					result[0] = append(result[0], comb[0][i])
+					return result
 				} else {
-					return []int{vars[0][i], 0}, vars[0][i]
+					result[0] = append(result[0], comb[0][i], 0)
+					return result
 				}
 			}
 		}
-	} else if len(vars) == 1 {
-		return []int{vars[0][0]}, vars[0][0]
+		return nil
 	} else {
-		for i := 0; i < ln; i++ {
-			if vars[0][i]/10 == 0 {
-				if new_vars, new_num := find(vars[1:], number-vars[0][i]); new_num+vars[0][i] == number {
-					result = append(result, vars[0][i])
-					for _, elem := range new_vars {
-						result = append(result, elem)
-					}
-					return result, new_num + vars[0][i]
-				}
+
+		var local_res [][]int
+		var cnt int
+
+		for i := 0; i < len(comb[0]); i++ {
+
+			if comb[0][i]/10 == 0 {
+				local_res = find(comb[1:], number-comb[0][i])
 			} else {
-				if new_vars, new_num := find(vars[2:], number-vars[0][i]); new_num+vars[0][i] == number {
-					result = append(result, vars[0][i])
-					for _, elem := range new_vars {
-						result = append(result, elem)
+				local_res = find(comb[2:], number-comb[0][i])
+			}
+
+			if local_res != nil {
+
+				for _, sub_arr := range local_res {
+					var buf []int
+					buf = append(buf, comb[0][i])
+					for _, elem := range sub_arr {
+						buf = append(buf, elem)
 					}
-					return result, new_num + vars[0][i]
+					cnt++
+					result = append(result, buf)
 				}
 			}
 		}
-		return result, 0
 	}
-	return result, 0
+	return result
 }
